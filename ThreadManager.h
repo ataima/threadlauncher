@@ -37,16 +37,16 @@ private:
     static pthread_mutex_t mMtxRun;
     static pthread_mutex_t mMtxStop;
     static caThreadManager *instance;
+private:
+    bool Run(size_t index);
+    size_t GetClientsSize(void);
+    size_t GetRunningSize(void);
+    size_t GetStoppedSize(void);
 public:
     caThreadManager();
     ~caThreadManager();
     bool AddClient(functor func,void *param, size_t index, const char *name);
 
-
-    bool Run(size_t index);
-    size_t GetClientsSize(void);
-    size_t GetRunningSize(void);
-    size_t GetStoppedSize(void);
     void GetStatus(statusThreads &st);
     void StartClients(size_t max_run);
     void StopClients(void);

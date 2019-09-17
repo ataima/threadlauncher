@@ -35,13 +35,14 @@ void * func_client(void *param)
     unsigned long int total = getelapsedtime();
     if (index < MAX_CLIENT)
     {
-        std::cout << total << " ) >>exec func client id=" << index << " (" << counters[index] <<
-                  ")" << std::endl;
+        //std::cout << total << " ) >>exec func client id=" << index << " (" << counters[index] <<
+        //          ")" << std::endl;
         counters[index]++;
     }
-    else
-        std::cout << total << " ) >>exec func client id=" << index << " HUH" << std::endl;
-    auto randtime=rand()&0xfff;
+    system("clear");
+    //else
+    //std::cout << total << " ) >>exec func client id=" << index << " HUH" << std::endl;
+    auto randtime=rand()&0xffff;
     usleep(100000+randtime);
     return nullptr;
 }
@@ -108,7 +109,7 @@ int main(void)
     maxtick = average = 0;
     for (i = 0; i < MAX_CLIENT; i++)
     {
-        std::cerr << "COUNTER[" << i << "]=" << counters[i] << std::endl;
+        //std::cerr << "COUNTER[" << i << "]=" << counters[i] << std::endl;
         average += counters[i];
         if (counters[i] < mintick)
         {

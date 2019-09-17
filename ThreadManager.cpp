@@ -86,18 +86,17 @@ bool caThreadManager::Run(size_t index)
     HERE1();
     bool result = false;
     caThreadClient * clientThread =nullptr;
-    auto num_clients=GetClientsSize();
-    auto num_running=GetRunningSize();
-    if(num_running<num_clients)
-    {
-        lockClients();
-        clientThread = clients.at(index);
-        unlockClients();
-        lockRunning();
-        running.push_back(clientThread);
-        unlockRunning();
-
-    }
+    //auto num_clients=GetClientsSize();
+    //auto num_running=GetRunningSize();
+    //if(num_running<num_clients)
+    //{
+    lockClients();
+    clientThread = clients.at(index);
+    unlockClients();
+    lockRunning();
+    running.push_back(clientThread);
+    unlockRunning();
+    //}
     if(clientThread!=nullptr &&  clientThread->getStatus() == caThreadStatus::WAIT_SIGNAL )
     {
         clientThread->Resume();
@@ -117,7 +116,6 @@ void  caThreadManager::finalize_client(size_t index,int error)
 
 void  caThreadManager::finalize( size_t index, int result)
 {
-    auto next_index=-1;
     caThreadClient * clientThread =nullptr;
     // save error
     // save to stopped thread
@@ -133,9 +131,7 @@ void  caThreadManager::finalize( size_t index, int result)
     auto crun=GetRunningSize();
     auto cclient=GetClientsSize();
     if(crun<cclient)
-        next_index=crun;
-    if(next_index!=1)
-        Run(next_index);
+        Run(crun);
 }
 
 
