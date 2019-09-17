@@ -3,7 +3,7 @@
 # to the root binary directory of the project as ${HELLO_BINARY_DIR}.
 cmake_minimum_required (VERSION 2.8.11)
 
-project (threadswitcher)
+project (threadlauncher)
 set(CXX_STANDARD 14)
 set(CXX_STANDARD_REQUIRED YES)
 set(CXX_EXTENSIONS NO)
@@ -16,16 +16,16 @@ include_directories(.)
 #However, the file(GLOB...) allows for wildcard additions:
 file(GLOB SOURCES "./*.cpp")
 
-ADD_EXECUTABLE(threadswitcher  ${SOURCES})
+ADD_EXECUTABLE(threadlauncher  ${SOURCES})
 
-install ( TARGETS threadswitcher DESTINATION ${CMAKE_INSTALL_PREFIX} )
+install ( TARGETS threadlauncher DESTINATION ${CMAKE_INSTALL_PREFIX} )
 
 set(CMAKE_CXX_FLAGS "--std=c++14 ${CMAKE_CXX_FLAGS}")
 
-target_link_libraries  ( threadswitcher  pthread )
+target_link_libraries  ( threadlauncher  pthread )
 
 add_custom_command (
-    TARGET threadswitcher
+    TARGET threadlauncher
     PRE_BUILD
     COMMAND ${PROJECT_HOME}/beauty.sh ${CMAKE_CURRENT_SOURCE_DIR}
 )
