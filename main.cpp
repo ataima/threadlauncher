@@ -11,7 +11,7 @@
 
 
 static struct timespec start, finish;
-#define MAX_CLIENT 100
+#define MAX_CLIENT 60
 static unsigned int counters[MAX_CLIENT];
 
 unsigned long int getelapsedtime(void)
@@ -35,13 +35,12 @@ void * func_client(void *param)
     unsigned long int total = getelapsedtime();
     if (index < MAX_CLIENT)
     {
-        //std::cout << total << " ) >>exec func client id=" << index << " (" << counters[index] <<
-        //          ")" << std::endl;
+        std::cout << total << " ) >>exec func client id=" << index << " (" << counters[index] <<
+                  ")" << std::endl;
         counters[index]++;
     }
-    system("clear");
-    //else
-    //std::cout << total << " ) >>exec func client id=" << index << " HUH" << std::endl;
+    else
+        std::cout << total << " ) >>exec func client id=" << index << " HUH" << std::endl;
     auto randtime=rand()&0xffff;
     usleep(100000+randtime);
     return nullptr;
@@ -67,44 +66,11 @@ int main(void)
 
     sleep(1);
     manager.StartClients(6);
-    statusThreads st;
-    do
-    {
-        manager.GetStatus(st);
-        sleep(1);
-    }
-    while(st.clients>st.running);
-    std::cerr<<"ALL THREAD STARTED"<<std::endl;
-    do
-    {
-        manager.GetStatus(st);
-        sleep(1);
-        std::cerr<<"CLIENTS="<<st.clients<<
-                 "  RUN="<<st.running <<
-                 "  STOPPED="<<st.stopped<<std::endl;
-    }
-    while(st.running>st.stopped);
-    std::cerr<<"ALL THREAD COMPLETED"<<std::endl;
-    manager.StopClients();
+    manager.WaitTerminateClients();
     manager.Reset();
     manager.StartClients(32);
-    do
-    {
-        manager.GetStatus(st);
-        sleep(1);
-    }
-    while(st.clients>st.running);
-    std::cerr<<"ALL THREAD STARTED"<<std::endl;
-    do
-    {
-        manager.GetStatus(st);
-        sleep(1);
-        std::cerr<<"CLIENTS="<<st.clients<<
-                 "  RUN="<<st.running <<
-                 "  STOPPED="<<st.stopped<<std::endl;
-    }
-    while(st.running>st.stopped);
-    std::cerr<<"ALL THREAD COMPLETED"<<std::endl;
+    manager.WaitTerminateClients();
+    manager.Reset();
     mintick = 10000000;
     maxtick = average = 0;
     for (i = 0; i < MAX_CLIENT; i++)

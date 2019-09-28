@@ -10,7 +10,7 @@
 
 
 typedef void * (*functor)(void *);
-typedef void (*cleanctor)(size_t, int);
+typedef void (*cleanctor)(int, int);
 
 typedef enum tag_thread_status
 {
@@ -22,20 +22,7 @@ typedef enum tag_thread_status
     EXITED
 } caThreadStatus;
 
-typedef enum tag_thread_mode
-{
-    WAIT_ALWAYS,
-    NO_WAIT,
-    WAIT_ONLY_START,
-    REQ_EXIT
-} caThreadMode;
 
-typedef enum tag_thread_schedule_mode
-{
-    ROUND_ROBIN,
-    MORE_INCR,
-    MODE_USER,
-} caSchedulerPriorityMode;
 
 
 #define MOREDEBUG 0

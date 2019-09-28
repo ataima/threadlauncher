@@ -10,38 +10,37 @@
 
 
 #include "Thread.h"
+#include <thread>
+#include <mutex>
+#include <condition_variable>
 
 class caThreadClient
 {
 protected:
     caThreadStatus mStatus;
-    caThreadMode mMode;
-    pthread_t *mThid;
-    static pthread_mutex_t mMtx;
-    pthread_cond_t mCond;
+    std::thread *mThid;
+    std::mutex mMtx;
+    std::condition_variable mCond;
     functor reqFunc;
     cleanctor cleanfunc;
-    size_t mIndex;
+    int mIndex;
     unsigned long int mTickCount;
     void *reqParam;
     char mName[32];
 
 
     bool CreateThread();
-    int WaitForSignal(void);
+    void WaitForSignal(void);
     int ExecuteClient(void);
-    int Lock(void);
-    int Unlock(void);
-    int CondWait(void);
-    int CondSignal(void);
+    void CondWait(void);
+    void CondSignal(void);
 
-    void DestroyThread(void);
-    void JoinThread(void);
+
 
 
 
 public:
-    caThreadClient( size_t index = 0,cleanctor cc=nullptr);
+    caThreadClient( int index = 0,cleanctor cc=nullptr);
     ~caThreadClient();
     bool InitThread(functor entry, void *param, const char *name);
     void SleepThread(unsigned int delay);
@@ -63,12 +62,8 @@ public:
         mStatus = m;
     }
 
-    inline caThreadMode getMode(void)
-    {
-        return mMode;
-    }
 
-    inline pthread_t * getThreadId(void)
+    inline std::thread * getThreadId(void)
     {
         return mThid;
     }
@@ -90,7 +85,6 @@ public:
 
 public:
     static void * entry_point(void *param);
-    static void cleanup_point(void *param);
 
 };
 

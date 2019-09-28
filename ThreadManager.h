@@ -23,38 +23,42 @@ typedef struct tag_status_thread
     size_t clients;
     size_t running;
     size_t stopped;
+    int errors;
 } statusThreads;
 
 class caThreadManager
 {
 private:
     thArray clients;
-    thArray running;
-    thArray stopped;
-    size_t max_running;
-    std::vector<size_t> errors;
-    static pthread_mutex_t mMtxClients;
-    static pthread_mutex_t mMtxRun;
-    static pthread_mutex_t mMtxStop;
+    std::vector<int> running;
+    std::vector<int> stopped;
+    int max_running;
+    int errors;
+    std::mutex mMtxRun;
+    std::mutex mMtxStop;
+    std::mutex mMtxEnd;
+    std::mutex mMtxGo;
+    std::condition_variable mCondEnd;
     static caThreadManager *instance;
 private:
-    bool Run(size_t index);
-    size_t GetClientsSize(void);
-    size_t GetRunningSize(void);
-    size_t GetStoppedSize(void);
+    bool Run(int index);
+    void pushRunning(int index);
+    void pushStopped(int index);
+    int  GetRunningSize(void);
+    int  GetStoppedSize(void);
+    void ClientsTerminateSignal();
+    void finalize(int index,int result);
 public:
     caThreadManager();
     ~caThreadManager();
-    bool AddClient(functor func,void *param, size_t index, const char *name);
-
+    bool AddClient(functor func,void *param, int index, const char *name);
     void GetStatus(statusThreads &st);
-    void StartClients(size_t max_run);
-    void StopClients(void);
-    bool Reset(void);
-
+    void StartClients(int max_run);
+    void Reset(void);
+    void WaitTerminateClients();
     inline bool haveErrors(void)
     {
-        return !errors.empty();
+        return !errors==0;
     }
 
     inline static caThreadManager * getInstance(void)
@@ -62,16 +66,9 @@ public:
         return instance;
     }
 
-    void lockRunning(void);
-    void unlockRunning(void);
-    void lockStopped(void);
-    void unlockStopped(void);
-    void lockClients(void);
-    void unlockClients(void);
 
-    void finalize(size_t index,int result);
 public:
-    static void finalize_client(size_t index,int result);
+    static void finalize_client(int index,int result);
 };
 
 
