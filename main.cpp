@@ -10,8 +10,11 @@
 #include <time.h>
 
 
+#define MAX_CLIENT 1024
+
+// CONSUME N THREAD FROM MAX_CLIENT WORKS
+
 static struct timespec start, finish;
-#define MAX_CLIENT 64
 static unsigned int counters[MAX_CLIENT];
 
 unsigned long int getelapsedtime(void)
