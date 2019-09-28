@@ -16,7 +16,7 @@
 
 caThreadClient::caThreadClient( int index,cleanctor cc)
 {
-    HERE1();
+
     mStatus = STOPPED;
     mThid = nullptr;
     reqFunc = nullptr;
@@ -27,24 +27,22 @@ caThreadClient::caThreadClient( int index,cleanctor cc)
     cleanfunc=cc;
 }
 
-void caThreadClient::Reset(void)
+void caThreadClient::Reset()
 {
-    mStatus = STOPPED;
-    InitThread(reqFunc, reqParam, mName) ;
+    if(mThid!=nullptr)
+        mThid->join();
+    CreateThread();
 }
 
 caThreadClient::~caThreadClient()
 {
-    if(getStatus()!=EXITED)
-        ReqExit();
     if(mThid!=nullptr)
         delete mThid;
-
 }
 
 bool caThreadClient::InitThread(functor func, void *param, const char *name)
 {
-    HERE1();
+
     bool result ;
     reqFunc = func;
     reqParam = param;
@@ -55,8 +53,8 @@ bool caThreadClient::InitThread(functor func, void *param, const char *name)
 
 bool caThreadClient::CreateThread()
 {
-    HERE1();
-    if(mThid==nullptr)
+
+    if(mThid!=nullptr)
         delete mThid;
     mThid=new std::thread(entry_point,this);
     return mThid==nullptr;
@@ -65,7 +63,7 @@ bool caThreadClient::CreateThread()
 
 void caThreadClient::SleepThread(unsigned int delay)
 {
-    HERE1();
+
     if (delay < 1000)
         usleep(delay * 1000);
     else
@@ -80,7 +78,7 @@ void * caThreadClient::entry_point(void *param)
     HERE();
     int * resptr=nullptr;
     size_t res = 0;
-    caThreadClient* client = static_cast<caThreadClient*> (param);
+    auto client = static_cast<caThreadClient*> (param);
     if (client != nullptr)
     {
         client->WaitForSignal();
@@ -97,25 +95,25 @@ void * caThreadClient::entry_point(void *param)
 
 
 
-void caThreadClient::CondWait(void)
+void caThreadClient::CondWait()
 {
-    HERE1();
+
     std::unique_lock<std::mutex> lck(mMtx);
     mCond.wait(lck);
 }
 
 
-void  caThreadClient::CondSignal(void)
+void  caThreadClient::CondSignal()
 {
-    HERE1();
+
     mCond.notify_one();
 }
 
 
 
-void caThreadClient::WaitForSignal(void)
+void caThreadClient::WaitForSignal()
 {
-    HERE1();
+
     mStatus = WAIT_SIGNAL;
     CondWait();
     mTickCount++;
@@ -123,9 +121,9 @@ void caThreadClient::WaitForSignal(void)
 
 
 
-int caThreadClient::ExecuteClient(void)
+int caThreadClient::ExecuteClient()
 {
-    HERE1();
+
     int res=-1;
     if (reqFunc != nullptr)
     {
@@ -137,18 +135,23 @@ int caThreadClient::ExecuteClient(void)
 }
 
 
-void caThreadClient::Resume(void)
+void caThreadClient::Resume()
 {
-    HERE1();
+
     CondSignal();
     mStatus = RESUME;
 }
 
 
-
-void caThreadClient::ReqExit(void)
+void caThreadClient::ReqExit()
 {
-    HERE1();
-    CondSignal();
-    mStatus = TRY_EXIT;
+    auto count=0;
+    while(mStatus!=EXITED){
+        usleep(10000);
+        count++;
+        if(count>100)break;
+    }
+    if(mThid->joinable())
+        mThid->join();
+    mStatus = EXITED;
 }

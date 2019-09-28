@@ -30,29 +30,29 @@ protected:
 
 
     bool CreateThread();
-    void WaitForSignal(void);
-    int ExecuteClient(void);
-    void CondWait(void);
-    void CondSignal(void);
+    void WaitForSignal();
+    int ExecuteClient();
+    void CondWait();
+    void CondSignal();
 
 
 
 
 
 public:
-    caThreadClient( int index = 0,cleanctor cc=nullptr);
+    explicit caThreadClient( int index = 0,cleanctor cc=nullptr);
     ~caThreadClient();
     bool InitThread(functor entry, void *param, const char *name);
     void SleepThread(unsigned int delay);
-    void Resume(void);
-    void ReqExit(void);
-    void Reset(void);
+    void Resume();
+    void ReqExit();
+    void Reset();
     inline void finalize_cleanup(int result)
     {
         if (cleanfunc!=nullptr)
             cleanfunc(mIndex,result);
     }
-    inline caThreadStatus getStatus(void)
+    inline caThreadStatus getStatus()
     {
         return mStatus;
     }
@@ -63,22 +63,22 @@ public:
     }
 
 
-    inline std::thread * getThreadId(void)
+    inline std::thread * getThreadId()
     {
         return mThid;
     }
 
-    inline const char *getName(void)
+    inline const char *getName()
     {
         return mName;
     }
 
-    inline int getTickCount(void)
+    inline unsigned long int getTickCount()
     {
         return mTickCount;
     }
 
-    inline size_t getIndex(void)
+    inline size_t getIndex()
     {
         return mIndex;
     }

@@ -22,7 +22,6 @@ caThreadManager *caThreadManager::instance = nullptr;
 
 caThreadManager::caThreadManager()
 {
-    HERE1();
     max_running=1;
     clients.clear();
     running.clear();
@@ -32,34 +31,37 @@ caThreadManager::caThreadManager()
         std::cerr << "caThreadManager::instance already set !!" << std::endl;
     }
     instance = this;
+    errors=0;
 }
 
 caThreadManager::~caThreadManager()
 {
-    HERE1();
-    Reset();
+    for(auto th: clients)
+    {
+        th->ReqExit();
+        delete th;
+    }
+    mMtxRun.lock();
+    running.clear();
+    mMtxRun.unlock();
+    mMtxStop.lock();
+    stopped.clear();
+    mMtxStop.unlock();
 }
 
 
 
 bool caThreadManager::AddClient(functor func, void *param,  int index, const char *name)
 {
-    HERE1();
-    bool result = false;
-    caThreadClient *client = new caThreadClient(index,caThreadManager::finalize_client);
-    if (client != nullptr)
-    {
-        client->InitThread(func, param, name);
-        clients.push_back(client);
-        result = true;
-    }
-    return result;
+    auto client = new caThreadClient(index,caThreadManager::finalize_client);
+    client->InitThread(func, param, name);
+    clients.push_back(client);
+    return true;
 }
 
 
 void caThreadManager::pushRunning(int index)
 {
-    HERE1();
     std::unique_lock<std::mutex> lck(mMtxRun);
     running.push_back(index);
 }
@@ -67,26 +69,23 @@ void caThreadManager::pushRunning(int index)
 
 void caThreadManager::pushStopped(int index)
 {
-    HERE1();
+
     std::unique_lock<std::mutex> lck(mMtxStop);
     stopped.push_back(index);
 }
 
 
-
-int caThreadManager::GetRunningSize(void)
+int caThreadManager::GetRunningSize()
 {
-    HERE1();
-    int size = 0;
+    auto size = 0;
     std::unique_lock<std::mutex> lck(mMtxRun);
     size = (int) running.size();
-    return (int)size;
+    return size;
 }
 
 
-int caThreadManager::GetStoppedSize(void)
+int caThreadManager::GetStoppedSize()
 {
-    HERE1();
     int size = 0;
     std::unique_lock<std::mutex> lck(mMtxStop);
     size = (int) stopped.size();
@@ -105,11 +104,10 @@ void caThreadManager::GetStatus(statusThreads &st)
 
 bool caThreadManager::Run(int index)
 {
-    HERE1();
-    bool result = false;
+    auto result = false;
     if(index<clients.size())
     {
-        caThreadClient * clientThread =clients.at(index);;
+        auto clientThread =clients.at(index);;
         if(clientThread!=nullptr &&  clientThread->getStatus() == caThreadStatus::WAIT_SIGNAL )
         {
             clientThread->Resume();
@@ -131,8 +129,8 @@ void  caThreadManager::finalize_client(int index,int error)
 
 void  caThreadManager::finalize( int index, int result)
 {
-    caThreadClient *  clientThread=clients.at(index);
     pushStopped(index);
+    if(result!=0)errors++;
     auto crun=GetRunningSize();
     auto cclient=clients.size();
     auto cstop=GetStoppedSize();
@@ -150,9 +148,8 @@ void  caThreadManager::finalize( int index, int result)
 
 
 
-void  caThreadManager::Reset(void)
+void  caThreadManager::Reset()
 {
-    auto res=false;
     for(auto th: clients)
     {
         th->Reset();
@@ -173,7 +170,6 @@ void  caThreadManager::Reset(void)
 
 void caThreadManager::StartClients(int max_run)
 {
-    HERE1();
     max_running=max_run;
     do
     {
@@ -191,20 +187,20 @@ void caThreadManager::StartClients(int max_run)
         }
 
     }
-    while(1);
+    while(true);
 }
 
 
 
 
 
-void caThreadManager::ClientsTerminateSignal(void)
+void caThreadManager::ClientsTerminateSignal()
 {
     mCondEnd.notify_one();
 }
 
 
-void caThreadManager::WaitTerminateClients(void)
+void caThreadManager::WaitTerminateClients()
 {
     std::unique_lock<std::mutex> lck(mMtxEnd);
     mCondEnd.wait(lck);

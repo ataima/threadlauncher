@@ -17,7 +17,8 @@
 class caThreadManager;
 
 typedef std::vector<caThreadClient *> thArray;
-typedef int (*functor_nexttask)(caThreadManager *instance);
+
+
 typedef struct tag_status_thread
 {
     size_t clients;
@@ -44,8 +45,8 @@ private:
     bool Run(int index);
     void pushRunning(int index);
     void pushStopped(int index);
-    int  GetRunningSize(void);
-    int  GetStoppedSize(void);
+    int  GetRunningSize();
+    int  GetStoppedSize();
     void ClientsTerminateSignal();
     void finalize(int index,int result);
 public:
@@ -54,14 +55,14 @@ public:
     bool AddClient(functor func,void *param, int index, const char *name);
     void GetStatus(statusThreads &st);
     void StartClients(int max_run);
-    void Reset(void);
+    void Reset();
     void WaitTerminateClients();
-    inline bool haveErrors(void)
+    inline bool haveErrors()
     {
-        return !errors==0;
+        return (errors!=0);
     }
 
-    inline static caThreadManager * getInstance(void)
+    inline static caThreadManager * getInstance()
     {
         return instance;
     }

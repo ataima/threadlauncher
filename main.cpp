@@ -11,7 +11,7 @@
 
 
 static struct timespec start, finish;
-#define MAX_CLIENT 60
+#define MAX_CLIENT 512
 static unsigned int counters[MAX_CLIENT];
 
 unsigned long int getelapsedtime(void)
@@ -65,12 +65,17 @@ int main(void)
     clock_gettime(CLOCK_REALTIME, &start);
 
     sleep(1);
-    manager.StartClients(6);
+    manager.StartClients(16);
     manager.WaitTerminateClients();
     manager.Reset();
     manager.StartClients(32);
     manager.WaitTerminateClients();
     manager.Reset();
+    manager.StartClients(64);
+    manager.WaitTerminateClients();
+    manager.Reset();
+    manager.StartClients(128);
+    manager.WaitTerminateClients();
     mintick = 10000000;
     maxtick = average = 0;
     for (i = 0; i < MAX_CLIENT; i++)
