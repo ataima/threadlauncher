@@ -11,7 +11,7 @@
 
 
 static struct timespec start, finish;
-#define MAX_CLIENT 512
+#define MAX_CLIENT 64
 static unsigned int counters[MAX_CLIENT];
 
 unsigned long int getelapsedtime(void)

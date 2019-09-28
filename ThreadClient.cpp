@@ -146,7 +146,8 @@ void caThreadClient::Resume()
 void caThreadClient::ReqExit()
 {
     auto count=0;
-    while(mStatus!=EXITED){
+    while(mStatus!=EXITED)
+    {
         usleep(10000);
         count++;
         if(count>100)break;
